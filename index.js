@@ -38,16 +38,21 @@ app.get('/api/shorturl/:short', (req, res) => {
 });
 
 
-app.post('/api/shorturl',(req,res)=>{
-  const originalUrl =  req.body.url;
+app.post('/api/shorturl', (req, res) => {
+  const originalUrl = req.body.url;
 
-  try{
+  const urlRegex = /^(http|https):\/\/[^ "]+$/;
+  if (!urlRegex.test(originalUrl)) {
+    return res.json({ error: 'invalid url' });
+  }
+  try {
     const hostname = urlParser.parse(originalUrl).hostname;
 
-    dns.lookup(hostname,(err)=>{
-      if(err){
-        return res.json({error : "Invalid url"});
+    dns.lookup(hostname, (err) => {
+      if (err) {
+        return res.json({ error: 'invalid url' });
       }
+
       const shortUrl = urlCounter++;
       urlDatabase[shortUrl] = originalUrl;
 
@@ -59,7 +64,6 @@ app.post('/api/shorturl',(req,res)=>{
   } catch (err) {
     res.json({ error: 'invalid url' });
   }
-
 });
 
 app.listen(port, function() {
